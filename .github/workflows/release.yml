@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        version_branch: [35, 36]
+        version_branch: [35, 36, 37]
 
     steps:
       - name: Checkout out the codebase
@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        version_branch: [35, 36]
+        version_branch: [35, 36, 37]
 
     steps:
       - name: Checkout out the codebase
@@ -109,7 +109,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v3
         with:
-          context: ./fedora36/.
+          context: ./fedora37/.
           platforms: linux/amd64
           push: true
           tags: |
