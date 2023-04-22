@@ -6,13 +6,14 @@ Keep all version in one repository under different tags
 
 ## Tags
 - `35`. Fedora 35
+- `36`. Fedora 36
 
 ## How to Build
 
 To build the image on your own locally, do the following:
 
   1. [Install Docker](https://docs.docker.com/engine/installation/).
-  2. `cd` into target directory. For example, target directory for `Fedora 35` is `fedora35`
+  2. `cd` into target directory. For example, target directory for `Fedora 36` is `fedora36`
   3. Run `docker build -t docker-fedora-ansible .`.
 
   ## How to Use
@@ -31,3 +32,4 @@ Thanks for [Jeff Geerling](https://github.com/geerlingguy)
 ### Based
 Based on:
 - https://github.com/geerlingguy/docker-fedora35-ansible
+- https://github.com/geerlingguy/docker-fedora36-ansible
