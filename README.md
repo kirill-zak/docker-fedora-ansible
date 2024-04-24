@@ -9,13 +9,15 @@ Keep all version in one repository under different tags
 - `36`. Fedora 36
 - `37`. Fedora 37
 - `38`. Fedora 38
+- `39`. Fedora 39
+- `40`. Fedora 40
 
 ## How to Build
 
 To build the image on your own locally, do the following:
 
   1. [Install Docker](https://docs.docker.com/engine/installation/).
-  2. `cd` into target directory. For example, target directory for `Fedora 38` is `fedora38`
+  2. `cd` into target directory. For example, target directory for `Fedora 40` is `fedora40`
   3. Run `docker build -t docker-fedora-ansible .`.
 
   ## How to Use
