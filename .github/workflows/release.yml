@@ -4,7 +4,11 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - '*'  
+  workflow_dispatch:
+
+env:
+  REGISTRY_IMAGE: kirillzak/docker-fedora-ansible
 
 jobs:
   test:
@@ -48,6 +52,12 @@ jobs:
     steps:
       - name: Checkout out the codebase
         uses: actions/checkout@v4
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
 
       - name: Add Qemu
         uses: docker/setup-qemu-action@v3
@@ -69,14 +79,32 @@ jobs:
           password: ${{ secrets.GHCR_REGISTRY_TOKEN }}
 
       - name: Build and push image
+        id: build
         uses: docker/build-push-action@v5
         with:
-          context: ./fedora${{ matrix.version_branch }}/.
-          platforms: linux/amd64
+          context: ./
+          file: ./fedora${{ matrix.version_branch }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
           push: true
           tags: |
             kirillzak/docker-fedora-ansible:${{ matrix.version_branch }}
             ghcr.io/${{ github.repository }}:${{ matrix.version_branch }}
+      
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.version_branch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   latest-release:
     name: Latest release
@@ -86,6 +114,12 @@ jobs:
     steps:
       - name: Checkout out the codebase
         uses: actions/checkout@v4
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
 
       - name: Add Qemu
         uses: docker/setup-qemu-action@v3
@@ -107,11 +141,30 @@ jobs:
           password: ${{ secrets.GHCR_REGISTRY_TOKEN }}
 
       - name: Build and push image
+        id: build
         uses: docker/build-push-action@v5
         with:
-          context: ./fedora40/.
-          platforms: linux/amd64
+          context: ./
+          file: ./fedora${{ matrix.version_branch }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
           push: true
           tags: |
             kirillzak/docker-fedora-ansible:latest
             ghcr.io/${{ github.repository }}:latest
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-latest
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+

@@ -12,6 +12,10 @@ Keep all version in one repository under different tags
 - `39`. Fedora 39
 - `40`. Fedora 40
 
+## Platforms
+- `linux/amd64`
+- `linux/arm64`
+
 ## How to Build
 
 To build the image on your own locally, do the following:

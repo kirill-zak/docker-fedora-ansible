@@ -1,4 +1,7 @@
-FROM fedora:35
+# Get build platform
+ARG BUILDPLATFORM=linux/amd64
+
+FROM --platform=$BUILDPLATFORM fedora:35
 LABEL maintainer="Kirill Ziuzin"
 ENV container=docker
 
