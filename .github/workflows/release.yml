@@ -145,7 +145,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
-          file: ./fedora${{ matrix.version_branch }}/Dockerfile
+          file: ./fedora40/Dockerfile
           platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
