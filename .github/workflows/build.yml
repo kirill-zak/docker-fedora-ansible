@@ -16,6 +16,7 @@ jobs:
       matrix:
         platform:
           - linux/amd64
+          - linux/arm64
         version_branch: [35, 36, 37, 38, 39, 40]
 
     steps:
