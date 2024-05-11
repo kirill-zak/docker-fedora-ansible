@@ -15,6 +15,7 @@ Keep all version in one repository under different tags
 ## Platforms
 - `linux/amd64`
 - `linux/arm64`
+- `linux/ppc64le`
 
 ## How to Build
 
