@@ -16,6 +16,7 @@ Keep all version in one repository under different tags
 - `linux/amd64`
 - `linux/arm64`
 - `linux/ppc64le`
+- `linux/s390x`
 
 ## How to Build
 
