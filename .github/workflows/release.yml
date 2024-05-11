@@ -84,7 +84,7 @@ jobs:
         with:
           context: ./
           file: ./fedora${{ matrix.version_branch }}/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/ppc64le
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
           push: true
@@ -146,7 +146,7 @@ jobs:
         with:
           context: ./
           file: ./fedora40/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/ppc64le
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
           push: true
