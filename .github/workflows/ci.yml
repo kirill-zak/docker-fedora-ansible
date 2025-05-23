@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41]
+        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
 
     steps:
       - name: Checkout out the codebase

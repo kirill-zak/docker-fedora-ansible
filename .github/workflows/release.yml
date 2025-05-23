@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41]
+        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
 
     steps:
       - name: Checkout out the codebase
@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41]
+        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
 
     steps:
       - name: Checkout out the codebase
@@ -145,7 +145,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./
-          file: ./fedora41/Dockerfile
+          file: ./fedora42/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
