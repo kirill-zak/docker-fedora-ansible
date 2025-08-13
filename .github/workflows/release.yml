@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout out the codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Test building image
         run: podman build -t docker-fedora-ansible:${{ matrix.version_branch }} ./fedora${{ matrix.version_branch }}/.
@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout out the codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Docker meta
         id: meta
@@ -113,7 +113,7 @@ jobs:
 
     steps:
       - name: Checkout out the codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Docker meta
         id: meta
