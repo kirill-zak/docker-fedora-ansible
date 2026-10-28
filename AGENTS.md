@@ -3,7 +3,7 @@
 Guidance for AI coding agents working in this repository.
 
 ## About the project
-docker-fedora-ansible is a Fedora 43 image with Ansible pre-installed,
+docker-fedora-ansible is a Fedora (43–44) image with Ansible pre-installed,
 designed for testing playbooks and roles. All versions live in a single repository
 and are published under different tags to Docker Hub and GHCR.
 
@@ -27,7 +27,7 @@ and are published under different tags to Docker Hub and GHCR.
 - `.gitignore` — files kept out of git (`.context`, `.omo`).
 
 ## Build and test
-- Local build: `cd fedora42 && docker build -t docker-fedora-ansible .`
+- Local build: `cd fedora44 && docker build -t docker-fedora-ansible .`
 - Smoke test (as in CI, `test-image.yml`):
   1. `podman build -t docker-fedora-ansible:<version> ./fedora<version>/.`
   2. `podman run --name test-container --detach --privileged \
@@ -37,12 +37,13 @@ and are published under different tags to Docker Hub and GHCR.
   `make test-build version_branch=43`).
 
 ## CI/CD conventions
-- Version matrix: `43`.
+- Version matrix: `43, 44`.
 - Versions, platforms, and the `latest` tag mapping live in `config.yml`
   (outputs `versions`, `platforms`, `latest_version`) — edit it to change the
   build/test matrix; no other workflow needs editing for a version change.
 - `35`–`42` are archived — no longer built or published (see README,
   "Archive tags").
+- README lists tags and archive tags in descending version order.
 - Platforms: `linux/amd64`, `linux/arm64`, `linux/ppc64le`, `linux/s390x`.
 - Release tag: `x.x` or `x.x.x`, optional `v` prefix
   (regex `^v?[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$`), no suffixes — enforced by
@@ -77,7 +78,7 @@ Guidelines:
 1. Create `fedora<version>/` with `Dockerfile` and `.dockerignore`.
 2. Add `"<version>"` to the `versions` output in `.github/workflows/config.yml`
    (and update `latest_version` there if the new version becomes `latest`); add the
-   tag to README.
+   tag to README in descending order.
 3. If the new version is the latest, update the `version_branch` default in
    `scripts/test.mk`.
 4. Run `workflow_dispatch` on `build.yml` and run the local smoke test
