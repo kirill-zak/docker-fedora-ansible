@@ -13,6 +13,7 @@ Keep all version in one repository under different tags
 - `40`. Fedora 40
 - `41`. Fedora 41
 - `42`. Fedora 42
+- `43`. Fedora 43
 
 ## Platforms
 - `linux/amd64`

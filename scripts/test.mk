@@ -1,5 +1,5 @@
 # Fedora version to build and test (defaults to the latest supported version)
-version_branch ?= 42
+version_branch ?= 43
 
 # Local image and container names used by the test build
 TEST_IMAGE ?= docker-fedora-ansible
