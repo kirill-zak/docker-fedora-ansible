@@ -5,14 +5,6 @@ Fedora docker container with built-in Ansible for playbook and role testing
 Keep all version in one repository under different tags
 
 ## Tags
-- `35`. Fedora 35
-- `36`. Fedora 36
-- `37`. Fedora 37
-- `38`. Fedora 38
-- `39`. Fedora 39
-- `40`. Fedora 40
-- `41`. Fedora 41
-- `42`. Fedora 42
 - `43`. Fedora 43
 
 ## Platforms
@@ -26,7 +18,7 @@ Keep all version in one repository under different tags
 To build the image on your own locally, do the following:
 
   1. [Install Docker](https://docs.docker.com/engine/installation/).
-  2. `cd` into target directory. For example, target directory for `Fedora 42` is `fedora42`
+  2. `cd` into target directory. For example, target directory for `Fedora 43` is `fedora43`
   3. Run `docker build -t docker-fedora-ansible .`.
 
   ## How to Use
@@ -38,6 +30,20 @@ To build the image on your own locally, do the following:
 ## Author
 
 [Kirill Ziuzin](https://kirill-zak.ru/)
+
+## Archive tags
+
+Not supported and not updated docker images.
+
+List of archive tags:
+- `35`. Fedora 35
+- `36`. Fedora 36
+- `37`. Fedora 37
+- `38`. Fedora 38
+- `39`. Fedora 39
+- `40`. Fedora 40
+- `41`. Fedora 41
+- `42`. Fedora 42
 
 ### Thanks
 Thanks for [Jeff Geerling](https://github.com/geerlingguy)
