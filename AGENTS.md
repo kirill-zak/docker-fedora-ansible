@@ -3,7 +3,7 @@
 Guidance for AI coding agents working in this repository.
 
 ## About the project
-docker-fedora-ansible is a Fedora (35–42) image with Ansible pre-installed,
+docker-fedora-ansible is a Fedora 43 image with Ansible pre-installed,
 designed for testing playbooks and roles. All versions live in a single repository
 and are published under different tags to Docker Hub and GHCR.
 
@@ -34,13 +34,15 @@ and are published under different tags to Docker Hub and GHCR.
      --volume /sys/fs/cgroup:/sys/fs/cgroup:ro docker-fedora-ansible:<version>`
   3. `podman exec --tty test-container env TERM=xterm ansible --version`
 - Or via the Makefile: `make test-build` (override the version with
-  `make test-build version_branch=35`).
+  `make test-build version_branch=43`).
 
 ## CI/CD conventions
-- Version matrix: `35, 36, 37, 38, 39, 40, 41, 42`.
+- Version matrix: `43`.
 - Versions, platforms, and the `latest` tag mapping live in `config.yml`
   (outputs `versions`, `platforms`, `latest_version`) — edit it to change the
   build/test matrix; no other workflow needs editing for a version change.
+- `35`–`42` are archived — no longer built or published (see README,
+  "Archive tags").
 - Platforms: `linux/amd64`, `linux/arm64`, `linux/ppc64le`, `linux/s390x`.
 - Release tag: `x.x` or `x.x.x`, optional `v` prefix
   (regex `^v?[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$`), no suffixes — enforced by
