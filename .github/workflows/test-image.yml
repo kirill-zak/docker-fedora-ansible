@@ -1,0 +1,29 @@
+---
+name: Test image
+
+on:
+  workflow_call:
+    inputs:
+      version_branch:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test fedora${{ inputs.version_branch }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout out the codebase
+        uses: actions/checkout@v7
+
+      - name: Test building image
+        run: podman build -t docker-fedora-ansible:${{ inputs.version_branch }} ./fedora${{ inputs.version_branch }}/.
+
+      - name: Run the built image
+        run: podman run --name test-container --detach --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro docker-fedora-ansible:${{ inputs.version_branch }}
+
+      - name: Verify Ansible is accessible in the built image
+        run: podman exec --tty test-container env TERM=xterm ansible --version

@@ -6,26 +6,20 @@ name: CI
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
+  config:
+    uses: ./.github/workflows/config.yml
+
   test:
     name: Test
-    runs-on: ubuntu-latest
-
-    strategy: 
+    needs: config
+    strategy:
       fail-fast: false
-
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
-
-    steps:
-      - name: Checkout out the codebase
-        uses: actions/checkout@v7
-
-      - name: Test building image
-        run: podman build -t docker-fedora-ansible:${{ matrix.version_branch }} ./fedora${{ matrix.version_branch }}/.
-      
-      - name: Run the built image
-        run: podman run --name test-container --detach --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro docker-fedora-ansible:${{ matrix.version_branch }}
-
-      - name: Verify Ansible is accessible in the built image
-        run: podman exec --tty test-container env TERM=xterm ansible --version
+        version_branch: ${{ fromJSON(needs.config.outputs.versions) }}
+    uses: ./.github/workflows/test-image.yml
+    with:
+      version_branch: ${{ matrix.version_branch }}

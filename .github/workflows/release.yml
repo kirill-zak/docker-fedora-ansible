@@ -4,167 +4,57 @@ name: Release
 on:
   push:
     tags:
-      - '*'  
+      - '*'
   workflow_dispatch:
 
-env:
-  REGISTRY_IMAGE: kirillzak/docker-fedora-ansible
+permissions:
+  contents: read
 
 jobs:
+  validate-tag:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - name: Validate tag format (vx.x[.x])
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          echo "Checking tag: ${tag}"
+          if ! echo "$tag" | grep -Eq '^v?[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?$'; then
+            echo "::error::Invalid release tag '${tag}'."
+            echo "::error::Expected x.x or x.x.x, optional 'v' prefix (e.g., 1.0.10, 10.1.12, 2.20, v1.12.1, v1.2), no pre-release suffixes."
+            exit 1
+          fi
+
+  config:
+    uses: ./.github/workflows/config.yml
+
   test:
     name: Test
-    runs-on: ubuntu-latest
-
-    strategy: 
+    needs: config
+    strategy:
       fail-fast: false
-
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
+        version_branch: ${{ fromJSON(needs.config.outputs.versions) }}
+    uses: ./.github/workflows/test-image.yml
+    with:
+      version_branch: ${{ matrix.version_branch }}
 
-    steps:
-      - name: Checkout out the codebase
-        uses: actions/checkout@v7
-
-      - name: Test building image
-        run: podman build -t docker-fedora-ansible:${{ matrix.version_branch }} ./fedora${{ matrix.version_branch }}/.
-      
-      - name: Run the built image
-        run: podman run --name test-container --detach --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro docker-fedora-ansible:${{ matrix.version_branch }}
-
-      - name: Verify Ansible is accessible in the built image
-        run: podman exec --tty test-container env TERM=xterm ansible --version
-
-  tag-release:
-    name: Release tags
-    runs-on: ubuntu-latest
-    needs: test
-
+  release:
+    name: Release ${{ matrix.version_branch }}
+    needs: [config, test, validate-tag]
     permissions:
       contents: read
       packages: write
-
-    strategy: 
+    if: ${{ needs.test.result == 'success' && (needs.validate-tag.result == 'success' || needs.validate-tag.result == 'skipped') }}
+    strategy:
       fail-fast: false
-
       matrix:
-        version_branch: [35, 36, 37, 38, 39, 40, 41, 42]
-
-    steps:
-      - name: Checkout out the codebase
-        uses: actions/checkout@v7
-      
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-
-      - name: Add Qemu
-        uses: docker/setup-qemu-action@v4
-
-      - name: Add Docker BuildX
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to DockerHub Registry
-        uses: docker/login-action@v4.7.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_REGISTRY_TOKEN }}
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@v7
-        with:
-          context: ./
-          file: ./fedora${{ matrix.version_branch }}/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
-          push: true
-          tags: |
-            kirillzak/docker-fedora-ansible:${{ matrix.version_branch }}
-            ghcr.io/${{ github.repository }}:${{ matrix.version_branch }}
-      
-      - name: Export digest
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@v7
-        with:
-          name: digests-${{ matrix.version_branch }}
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
-
-  latest-release:
-    name: Latest release
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout out the codebase
-        uses: actions/checkout@v7
-      
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-
-      - name: Add Qemu
-        uses: docker/setup-qemu-action@v4
-
-      - name: Add Docker BuildX
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to DockerHub Registry
-        uses: docker/login-action@v4.7.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_REGISTRY_TOKEN }}
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@v7
-        with:
-          context: ./
-          file: ./fedora42/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true
-          push: true
-          tags: |
-            kirillzak/docker-fedora-ansible:latest
-            ghcr.io/${{ github.repository }}:latest
-
-      - name: Export digest
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
-
-      - name: Upload digest
-        uses: actions/upload-artifact@v7
-        with:
-          name: digests-latest
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
-
+        version_branch: ${{ fromJSON(needs.config.outputs.versions) }}
+    uses: ./.github/workflows/build-image.yml
+    with:
+      version_branch: ${{ matrix.version_branch }}
+      platforms: ${{ join(fromJSON(needs.config.outputs.platforms), ',') }}
+      additional_tags: ${{ matrix.version_branch == needs.config.outputs.latest_version && 'latest' || '' }}
+      push: true
+    secrets: inherit
