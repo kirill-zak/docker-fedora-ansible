@@ -56,11 +56,13 @@ and are published under different tags to Docker Hub and GHCR.
   do not fail with "attempted to redefine BUILDPLATFORM".
 
 ## Commit message conventions
-Use Conventional Commits:
+Use Conventional Commits. Prefixes used in this repository:
 
-- New feature: `feat: <description>`
-- Bug fix: `fix: <description>`
-- Other types when they fit better: `docs:`, `refactor:`, `chore:`, `ci:`, `test:`.
+- `feat:` — new functionality.
+- `fix:` — correction of errors.
+
+Other types (`docs:`, `refactor:`, `chore:`, `ci:`, `test:`) may be used when
+`feat:`/`fix:` do not fit.
 
 Guidelines:
 
