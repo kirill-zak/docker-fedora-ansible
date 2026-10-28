@@ -1,5 +1,5 @@
 # Get build platform
-ARG BUILDPLATFORM=linux/amd64
+ARG BUILDPLATFORM
 
 FROM --platform=$BUILDPLATFORM fedora:38
 LABEL maintainer="Kirill Ziuzin"

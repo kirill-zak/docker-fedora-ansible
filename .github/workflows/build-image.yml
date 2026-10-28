@@ -1,0 +1,116 @@
+---
+name: Build and push Docker image
+
+on:
+  workflow_call:
+    inputs:
+      version_branch:
+        required: true
+        type: string
+      platforms:
+        required: true
+        type: string
+      additional_tags:
+        required: false
+        type: string
+        default: ''
+      push:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      DOCKER_HUB_USERNAME:
+        required: false
+      DOCKER_HUB_TOKEN:
+        required: false
+      GHCR_REGISTRY_TOKEN:
+        required: false
+
+env:
+  REGISTRY_IMAGE: kirillzak/docker-fedora-ansible
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: fedora${{ inputs.version_branch }} [${{ inputs.platforms }}]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout out the codebase
+        uses: actions/checkout@v7
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+
+      - name: Add Qemu
+        uses: docker/setup-qemu-action@v4
+
+      - name: Add Docker BuildX
+        uses: docker/setup-buildx-action@v4
+
+      - name: Compute tags
+        id: tags
+        run: |
+          end="EOF_TAGS"
+          {
+            echo "tags<<$end"
+            echo "${{ env.REGISTRY_IMAGE }}:${{ inputs.version_branch }}"
+            echo "ghcr.io/${{ github.repository }}:${{ inputs.version_branch }}"
+            for t in ${{ inputs.additional_tags }}; do
+              echo "${{ env.REGISTRY_IMAGE }}:$t"
+              echo "ghcr.io/${{ github.repository }}:$t"
+            done
+            echo "$end"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Login to DockerHub Registry
+        if: inputs.push
+        uses: docker/login-action@v4.7.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        if: inputs.push
+        uses: docker/login-action@v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_REGISTRY_TOKEN }}
+
+      - name: Build an image
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ./fedora${{ inputs.version_branch }}/.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: ${{ steps.meta.outputs.labels }}
+          load: ${{ ! inputs.push }}
+          platforms: ${{ inputs.platforms }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Export digest
+        if: inputs.push
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: inputs.push
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ inputs.version_branch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
