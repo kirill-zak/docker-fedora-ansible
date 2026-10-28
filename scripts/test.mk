@@ -6,12 +6,16 @@ TEST_IMAGE ?= docker-fedora-ansible
 TEST_CONTAINER ?= test-container
 
 # Smoke test mirroring .github/workflows/test-image.yml:
-# build the image for version_branch, run it, and verify Ansible is usable.
-# The container is removed first so the target can be re-run.
+# build the image for version_branch, run it, verify Ansible is usable,
+# then remove the created container and image. Cleanup also runs on failure.
 test-build:
-	podman build -t $(TEST_IMAGE):$(version_branch) ./fedora$(version_branch)/.
-	-podman rm -f $(TEST_CONTAINER)
-	podman run --name $(TEST_CONTAINER) --detach --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro $(TEST_IMAGE):$(version_branch)
-	podman exec --tty $(TEST_CONTAINER) env TERM=xterm ansible --version
+	@set -e; \
+	image="$(TEST_IMAGE):$(version_branch)"; \
+	container="$(TEST_CONTAINER)"; \
+	cleanup() { podman rm -f "$$container" >/dev/null 2>&1 || true; podman rmi -f "$$image" >/dev/null 2>&1 || true; }; \
+	trap cleanup EXIT; \
+	podman build -t "$$image" ./fedora$(version_branch)/.; \
+	podman run --name "$$container" --detach --privileged --volume /sys/fs/cgroup:/sys/fs/cgroup:ro "$$image"; \
+	podman exec --tty "$$container" env TERM=xterm ansible --version
 
 .PHONY: test-build
